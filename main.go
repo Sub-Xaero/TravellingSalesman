@@ -76,6 +76,15 @@ func main() {
 		return []ga.Genome{gene, spouse}
 	})
 
+	ga.SetMutateFunc(func(gene ga.Genome, chance int) ga.Genome {
+		sequence := []rune(gene.Sequence)
+		choice1 := (rand.Int() % (len(sequence) - 2)) + 1 // Start and end city must not change, so swap between
+		choice2 := (rand.Int() % (len(sequence) - 2)) + 1 //
+
+		sequence[choice1], sequence[choice2] = sequence[choice2], sequence[choice1]
+		//fmt.Println(string(sequence))
+		return ga.Genome{string(sequence)}
+	})
 
 	ga.SetFitnessFunc(func(gene ga.Genome) int {
 		genomeSequence := gene.Sequence

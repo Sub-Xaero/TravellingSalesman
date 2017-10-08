@@ -71,6 +71,11 @@ func main() {
 		return bitstring
 	})
 
+	ga.SetCrossoverFunc(func(gene, spouse ga.Genome) []ga.Genome {
+
+		return []ga.Genome{gene, spouse}
+	})
+
 
 	ga.SetFitnessFunc(func(gene ga.Genome) int {
 		genomeSequence := gene.Sequence

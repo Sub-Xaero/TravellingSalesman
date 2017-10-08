@@ -51,4 +51,24 @@ func main() {
 	}
 	fmt.Println(distances)
 
+	ga.SetGenerateBitString(func(length int) string {
+		possibilities := []int{
+			London,
+			Bath,
+			Bristol,
+			Leeds,
+			Glasgow,
+			Swansea,
+		}
+
+		bitstring := ""
+		for i := 0; i < length; i++ {
+			choice := rand.Int() % len(possibilities)
+			bitstring += strconv.Itoa(possibilities[choice])
+			possibilities = append(possibilities[:choice], possibilities[choice+1:]...)
+		}
+		bitstring += string(bitstring[0])
+		return bitstring
+	})
+
 }

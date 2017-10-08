@@ -71,4 +71,26 @@ func main() {
 		return bitstring
 	})
 
+
+	ga.SetFitnessFunc(func(gene ga.Genome) int {
+		genomeSequence := gene.Sequence
+		totalDistance := 0
+		for index := range genomeSequence {
+			if index == len(genomeSequence)-1 {
+				break
+			}
+			city1, _ := strconv.Atoi(string(genomeSequence[index]))
+			city2, _ := strconv.Atoi(string(genomeSequence[index+1]))
+
+			for _, j := range distances {
+				if (j.City1 == city1 && j.City2 == city2) || (j.City2 == city1 && j.City1 == city2) {
+					//fmt.Println("Distance between", city1, "and", city2, "is", j.Distance)
+					totalDistance += j.Distance
+					break
+				}
+			}
+		}
+		return maxDistance - totalDistance
+	})
+
 }

@@ -8,64 +8,73 @@ import (
 	"time"
 )
 
-var (
-	globalChance = 6
-	mutateChance = globalChance
-	numStrings   = globalChance
-	strLength    = globalChance
-	generations  = 1000
-)
-
 type Distance struct {
 	City1, City2 int
 	Distance     int
 }
 
 const (
-	_       = iota
-	London  = iota
-	Bath    = iota
-	Bristol = iota
-	Leeds   = iota
-	Glasgow = iota
-	Swansea = iota
+	London        = iota
+	Nottingham    = iota
+	Birmingham    = iota
+	Glasgow       = iota
+	Edinborough   = iota
+	Cambridge     = iota
+	Oxford        = iota
+	Bristol       = iota
+	Bath          = iota
+	Manchester    = iota
+	Cardiff       = iota
+	Belfast       = iota
+	Coventry      = iota
+	Plymouth      = iota
+	Wolverhampton = iota
 )
 
 func main() {
 	rand.Seed(time.Now().Unix())
 
-	distances := []Distance{
-		{Bristol, Bath, 14},
-		{Bristol, London, 105},
-		{Bristol, Leeds, 275},
-		{London, Bath, 110},
-		{London, Leeds, 227},
-		{Bath, Leeds, 291},
-		{Glasgow, London, 724},
-		{Glasgow, Bath, 850},
-		{Glasgow, Bristol, 802},
-		{Glasgow, Leeds, 620},
+	distances := [][]int{
+		{0, 29, 82, 46, 68, 52, 72, 42, 51, 55, 29, 74, 23, 72, 46},
+		{29, 0, 55, 46, 42, 43, 43, 23, 23, 31, 41, 51, 11, 52, 21},
+		{82, 55, 0, 68, 46, 55, 23, 43, 41, 29, 79, 21, 64, 31, 51},
+		{46, 46, 68, 0, 82, 15, 72, 31, 62, 42, 21, 51, 51, 43, 64},
+		{68, 42, 46, 82, 0, 74, 23, 52, 21, 46, 82, 58, 46, 65, 23},
+		{52, 43, 55, 15, 74, 0, 61, 23, 55, 31, 33, 37, 51, 29, 59},
+		{72, 43, 23, 72, 23, 61, 0, 42, 23, 31, 77, 37, 51, 46, 33},
+		{42, 23, 43, 31, 52, 23, 42, 0, 33, 15, 37, 33, 33, 31, 37},
+		{51, 23, 41, 62, 21, 55, 23, 33, 0, 29, 62, 46, 29, 51, 11},
+		{55, 31, 29, 42, 46, 31, 31, 15, 29, 0, 51, 21, 41, 23, 37},
+		{29, 41, 79, 21, 82, 33, 77, 37, 62, 51, 0, 65, 42, 59, 61},
+		{74, 51, 21, 51, 58, 37, 37, 33, 46, 21, 65, 0, 61, 11, 55},
+		{23, 11, 64, 51, 46, 51, 51, 33, 29, 41, 42, 61, 0, 62, 23},
+		{72, 52, 31, 43, 65, 29, 46, 31, 51, 23, 59, 11, 62, 0, 59},
+		{46, 21, 51, 64, 23, 59, 33, 37, 11, 37, 61, 55, 23, 59, 0},
+	}
 
-		{Swansea, London, 250},
-		{Swansea, Bath, 105},
-		{Swansea, Bristol, 98},
-		{Swansea, Leeds, 324},
-		{Swansea, Glasgow, 821},
-	}
 	maxDistance := 0
-	for _, i := range distances {
-		maxDistance += i.Distance
+	for i := range distances {
+		maxDistance += distances[i][0]
 	}
-	fmt.Println(distances)
+	fmt.Println(maxDistance)
 
 	ga.SetGenerateBitString(func(length int) string {
 		possibilities := []int{
 			London,
-			Bath,
-			Bristol,
-			Leeds,
+			Nottingham,
+			Birmingham,
 			Glasgow,
-			Swansea,
+			Edinborough,
+			Cambridge,
+			Oxford,
+			Bristol,
+			Bath,
+			Manchester,
+			Cardiff,
+			Belfast,
+			Coventry,
+			Plymouth,
+			Wolverhampton,
 		}
 
 		bitstring := ""
@@ -103,16 +112,18 @@ func main() {
 			city1, _ := strconv.Atoi(string(genomeSequence[index]))
 			city2, _ := strconv.Atoi(string(genomeSequence[index+1]))
 
-			for _, j := range distances {
-				if (j.City1 == city1 && j.City2 == city2) || (j.City2 == city1 && j.City1 == city2) {
-					//fmt.Println("Distance between", city1, "and", city2, "is", j.Distance)
-					totalDistance += j.Distance
-					break
-				}
-			}
+			totalDistance += distances[city1][city2]
 		}
 		return maxDistance - totalDistance
 	})
 
+	var (
+		numStrings   = 10
+		generations  = 100
+		strLength    = len(distances) // + 1
+		mutateChance = strLength
+	)
+
 	ga.GeneticAlgorithm(numStrings, strLength, generations, mutateChance)
+	fmt.Println(maxDistance)
 }

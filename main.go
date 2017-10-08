@@ -8,6 +8,13 @@ import (
 	"time"
 )
 
+var (
+	globalChance = 6
+	mutateChance = globalChance
+	numStrings   = globalChance
+	strLength    = globalChance
+	generations  = 1000
+)
 
 type Distance struct {
 	City1, City2 int
@@ -107,4 +114,5 @@ func main() {
 		return maxDistance - totalDistance
 	})
 
+	ga.GeneticAlgorithm(numStrings, strLength, generations, mutateChance)
 }

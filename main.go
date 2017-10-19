@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
-	"subxaero/ga"
+	. "subxaero/ga"
 	"time"
 )
 
@@ -58,7 +57,8 @@ func main() {
 	}
 	fmt.Println(maxDistance)
 
-	ga.SetGenerateBitString(func(length int) string {
+	var ga = NewGeneticAlgorithm()
+	ga.SetGenerateCandidate(func(length int) ([]int, error) {
 		possibilities := []int{
 			London,
 			Nottingham,
@@ -77,60 +77,53 @@ func main() {
 			Wolverhampton,
 		}
 
-		bitstring := ""
+		sequence := make([]int, 0)
 		for i := 0; i < length; i++ {
 			choice := rand.Int() % len(possibilities)
-			if possibilities[choice] < 10 {
-				bitstring += "0"
-			}
-			bitstring += strconv.Itoa(possibilities[choice])
+			sequence = append(sequence, possibilities[choice])
 			possibilities = append(possibilities[:choice], possibilities[choice+1:]...)
 		}
-		bitstring += string(bitstring[0:2])
-		return bitstring
+		sequence = append(sequence, sequence[0])
+		return sequence, nil
 	})
 
-	ga.SetCrossoverFunc(func(gene, spouse ga.Genome) []ga.Genome {
-		return []ga.Genome{gene, spouse}
+	ga.SetMutateFunc(func(gene Genome) Genome {
+		sequence := gene.Sequence
+		newSequence := append(make([]int, 0), gene.Sequence...)
+		min := 1
+		max := len(sequence) - 1
+
+		choice1 := rand.Int()%(max-min) + min
+		choice2 := rand.Int()%(max-min) + min
+
+		newSequence[choice1], newSequence[choice2] = sequence[choice2], sequence[choice1]
+		return Genome{Sequence: newSequence}
 	})
 
-	ga.SetMutateFunc(func(gene ga.Genome, chance int) ga.Genome {
-		sequence := []rune(gene.Sequence)
-		newSequence := []rune(gene.Sequence)
-		min := 2
-		max := len(sequence) - 2
-
-		choice1 := 2 * ((rand.Int()%(max-min) + min) / 2)
-		choice2 := 2 * ((rand.Int()%(max-min) + min) / 2)
-
-		newSequence[choice1], newSequence[choice1+1] = sequence[choice2], sequence[choice2+1]
-		newSequence[choice2], newSequence[choice2+1] = sequence[choice1], sequence[choice1+1]
-		return ga.Genome{Sequence: string(newSequence)}
-	})
-
-	gene := ga.Genome{Sequence: ga.GenerateBitString(len(distances))}
+	sequence, err := ga.GenerateCandidate(len(distances))
+	if err != nil {
+		panic(err)
+	}
+	gene := Genome{Sequence: sequence}
 	fmt.Println(gene.Sequence)
-	fmt.Println(gene.Mutate(len(gene.Sequence)).Sequence)
+	fmt.Println(ga.Mutate(gene).Sequence)
 
-	ga.SetFitnessFunc(func(gene ga.Genome) int {
+	ga.SetFitnessFunc(func(gene Genome) int {
 		genomeSequence := gene.Sequence
 		totalDistance := 0
-		for i := 0; i < len(genomeSequence)-4; i += 4 {
-			city1, _ := strconv.Atoi(string(genomeSequence[i : i+2]))
-			city2, _ := strconv.Atoi(string(genomeSequence[i+2 : i+3]))
-
+		for i := 0; i < len(genomeSequence)-1; i++ {
+			city1, city2 := genomeSequence[i], genomeSequence[i+1]
 			totalDistance += distances[city1][city2]
 		}
 		return maxDistance - totalDistance
 	})
 
 	var (
-		numStrings   = 10
-		generations  = 100
-		strLength    = len(distances) // + 1
-		mutateChance = strLength
+		numStrings  = 10
+		generations = 50000
+		strLength   = len(distances) - 1
 	)
 
-	ga.GeneticAlgorithm(numStrings, strLength, generations, mutateChance)
+	ga.Run(numStrings, strLength, generations, false, true, true)
 	fmt.Println(maxDistance)
 }
